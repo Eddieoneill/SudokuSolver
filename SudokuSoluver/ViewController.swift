@@ -8,10 +8,18 @@
 
 import UIKit
 
-class ViewController: UIViewController {
+class ViewController: UIViewController, UITextFieldDelegate {
     var collection = [UICollectionViewCell]()
+    var titles = [UITextView]()
     var questionList: [SudokuQA] = []
     var cellCount = 1
+    var emptySpots = 0
+    var row: [Int: Int] = [:]
+    var column: [Int: Int] = [:]
+    var box: [Int: Int] = [:]
+    var rowPossibility: [Int: Set<Int>] = [1: [], 2: [], 3: [], 4: [], 5: [], 6: [], 7: [], 8: [], 9: []]
+    var columnPossibility: [Int: Set<Int>] = [1: [], 2: [], 3: [], 4: [], 5: [], 6: [], 7: [], 8: [], 9: []]
+    var boxPossibility: [Int: Set<Int>] = [1: [], 2: [], 3: [], 4: [], 5: [], 6: [], 7: [], 8: [], 9: []]
     var numbers = [Int]()
     let numbersToolbar = UIToolbar(frame:CGRect(x: 0, y: 0, width: UIScreen.main.bounds.width, height: 50))
     
@@ -26,9 +34,10 @@ class ViewController: UIViewController {
         return cv
     }()
     
-    let button: UIButton = {
-        let frame = CGRect(x: 140, y: 600, width: 100, height: 50)
+    let gameButton: UIButton = {
+        let frame = CGRect(x: 275, y: 600, width: 100, height: 50)
         let button = UIButton(type: .system)
+        button.layer.cornerRadius = 8
         button.frame = frame
         button.backgroundColor = .green
         button.setTitle("Create Game", for: .normal)
@@ -37,12 +46,27 @@ class ViewController: UIViewController {
         return button
     }()
     
+    let solveButton: UIButton = {
+        let frame = CGRect(x: 0, y: 600, width: 100, height: 50)
+        let button = UIButton(type: .system)
+        button.layer.cornerRadius = 8
+        button.frame = frame
+        button.backgroundColor = .green
+        button.setTitle("Solve Game", for: .normal)
+        button.addTarget(self, action: #selector(solveGame), for: .touchUpInside)
+        
+        return button
+    }()
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-        self.view.addSubview(button)
+        self.view.addSubview(gameButton)
+        self.view.addSubview(solveButton)
         view.addSubview(collectionView)
         view.backgroundColor = .black
-        collectionView.topAnchor.constraint(equalTo: view.topAnchor, constant: 100).isActive = true
+        gameButton.frame = CGRect(x: view.frame.width - 100, y: view.frame.height - 100, width: 100, height: 50)
+        solveButton.frame = CGRect(x: 0, y: view.frame.height - 100, width: 100, height: 50)
+        collectionView.topAnchor.constraint(equalTo: view.topAnchor, constant: 50).isActive = true
         collectionView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 1).isActive = true
         collectionView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -1).isActive = true
         collectionView.heightAnchor.constraint(equalTo: view.widthAnchor, constant: 1).isActive = true
@@ -50,6 +74,18 @@ class ViewController: UIViewController {
         collectionView.delegate = self
         collectionView.dataSource = self
         loadQuestion()
+        setUpChecker()
+        setupBoxLocation()
+    }
+    
+    func setUpChecker() {
+        for num1 in 1...9 {
+            for num2 in 1...9 {
+                rowPossibility[num1]?.insert(num2)
+                columnPossibility[num1]?.insert(num2)
+                boxPossibility[num1]?.insert(num2)
+            }
+        }
     }
     
     func loadQuestion() {
@@ -66,8 +102,11 @@ class ViewController: UIViewController {
     }
     
     @objc func startGame(sender : UIButton) {
-        //cellCollection = cellCollection.sorted(by: { $0.tag > $1.tag })
         createBoard()
+    }
+    
+    @objc func solveGame(sender : UIButton) {
+        solveProblem()
     }
 }
 
