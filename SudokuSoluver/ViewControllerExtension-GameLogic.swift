@@ -78,85 +78,113 @@ extension ViewController {
     
     func setupBoxLocation() {
         var count = 0
+        
+        for num in 1...81 {
+            if num % 9 != 0 {
+                column[num] = num % 9
+            } else {
+                column[num] = 9
+            }
+        }
+        
         for num1 in 0..<9 {
             for num2 in 0..<9 {
                 count += 1
+                row[count] = num1 + 1
                 if num1 <= 2 {
                     if num2 <= 2 {
                         box[count] = 1
-                        row[count] = 1
-                        column[count] = 1
                     } else if num2 <= 5 {
                         box[count] = 2
-                        row[count] = 2
-                        column[count] = 2
                     } else {
                         box[count] = 3
-                        row[count] = 3
-                        column[count] = 3
                     }
                 } else if num1 <= 5 {
                     if num2 <= 2 {
                         box[count] = 4
-                        row[count] = 4
-                        column[count] = 4
                     } else if num2 <= 5 {
                         box[count] = 5
-                        row[count] = 5
-                        column[count] = 5
                     } else {
                         box[count] = 6
-                        row[count] = 6
-                        column[count] = 6
                     }
                 } else {
                     if num2 <= 2 {
                         box[count] = 7
-                        row[count] = 7
-                        column[count] = 7
                     } else if num2 <= 5 {
                         box[count] = 8
-                        row[count] = 8
-                        column[count] = 8
                     } else {
                         box[count] = 9
-                        row[count] = 9
-                        column[count] = 9
                     }
                 }
             }
         }
     }
     
-    func checkPossibility(location: [Int: Int], current: Int) -> Int {
-        return location[current] ?? 0
+    func checkPossibility(location: [Int: Int], current: Int) -> Int? {
+        return location[current]
     }
     
+    func removeSeenNumber() {
+        var count = 0
+        
+        for num1 in 0..<9 {
+            for num2 in 0..<9 {
+                count += 1
+                let number = questionList[0].question[num1][num2]
+                guard let boxLocation = checkPossibility(location: box, current: count) else { break }
+                guard let rowLocation = checkPossibility(location: row, current: count) else { break }
+                guard let columnLocation = checkPossibility(location: column, current: count) else { break }
+                
+                if number != 0 {
+                    if rowPossibility[rowLocation]!.contains(number) {
+                        rowPossibility[rowLocation]?.remove(number)
+                    }
+                    if columnPossibility[columnLocation]!.contains(number) {
+                        columnPossibility[columnLocation]?.remove(number)
+                    }
+                    if boxPossibility[boxLocation]!.contains(number) {
+                        boxPossibility[boxLocation]?.remove(number)
+                    }
+                }
+            }
+        }
+    }
     func solveProblem() -> Bool {
         var loopCount = 0
         let numberList: Set<String> = ["1","2","3","4","5","6","7","8","9"]
-        while emptySpots >= 0 {
+        
+        removeSeenNumber()
+        
+        while emptySpots > 0 {
             for (index, number) in titles.enumerated() where !numberList.contains(number.text) {
                 let current = index + 1
-                let boxLocation = checkPossibility(location: box, current: current)
-                let rowLocation = checkPossibility(location: row, current: current)
-                let columnLocation = checkPossibility(location: column, current: current)
+                guard let boxLocation = checkPossibility(location: box, current: current) else { break }
+                guard let rowLocation = checkPossibility(location: row, current: current) else { break }
+                guard let columnLocation = checkPossibility(location: column, current: current) else { break }
                 var possibleNumber = options(row: rowPossibility[rowLocation]!, column: columnPossibility[columnLocation]!, box: boxPossibility[boxLocation]!)
                 print("==============")
                 print(current)
                 print(possibleNumber.sorted(by: { $0 > $1 }))
                 if possibleNumber.count == 1 {
-                    number.text = "\(possibleNumber.removeFirst())"
+                    let removedNumber = possibleNumber.removeFirst()
+                    number.text = "\(removedNumber)"
                     loopCount = 0
+                    emptySpots -= 1
+                    print(emptySpots)
+                    boxPossibility[boxLocation]?.remove(removedNumber)
+                    rowPossibility[rowLocation]?.remove(removedNumber)
+                    columnPossibility[columnLocation]?.remove(removedNumber)
                     break
                 } else {
                     loopCount += 1
                 }
             }
-//            if loopCount > 81 {
-//                return false
-//            }
+            if loopCount > 81 {
+                print("couldn't complete it")
+                return false
+            }
         }
+        print("completed it")
         return true
     }
 }
@@ -175,4 +203,14 @@ extension ViewController {
  [6, 0, 0, 0, 0, 0, 1, 0, 5],
  [0, 0, 3, 5, 0, 8, 6, 9, 0],
  [0, 4, 2, 9, 1, 0, 3, 0, 0]]
+ 
+ 8  6  4  3  7  1  2  5  9
+ 3  2  5  8  4  9  7  6  1
+ 9  7  1  2  6  5  8  4  3
+ 4  3  6  1  9  2  5  8  7
+ 1  9  8  6  5  7  4  3  2
+ 2  5  7  4  8  3  9  1  6
+ 6  8  9  7  3  4  1  2  5
+ 7  1  3  5  2  8  6  9  4
+ 5  4  2  9  1  6  3  7  8"
  */
