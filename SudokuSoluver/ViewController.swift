@@ -12,11 +12,14 @@ class ViewController: UIViewController, UITextFieldDelegate {
     var collection = [UICollectionViewCell]()
     var titles = [UITextView]()
     var questionList: [SudokuQA] = []
+    var randomQuestion: [SudokuQA] = []
     var cellCount = 1
     var emptySpots = 0
     var row: [Int: Int] = [:]
     var column: [Int: Int] = [:]
     var box: [Int: Int] = [:]
+    var currentRowLocation: [Int: Int] = [:]
+    var currentColumnLocation: [Int: Int] = [:]
     var rowPossibility: [Int: Set<Int>] = [1: [], 2: [], 3: [], 4: [], 5: [], 6: [], 7: [], 8: [], 9: []]
     var columnPossibility: [Int: Set<Int>] = [1: [], 2: [], 3: [], 4: [], 5: [], 6: [], 7: [], 8: [], 9: []]
     var boxPossibility: [Int: Set<Int>] = [1: [], 2: [], 3: [], 4: [], 5: [], 6: [], 7: [], 8: [], 9: []]
@@ -40,7 +43,7 @@ class ViewController: UIViewController, UITextFieldDelegate {
         button.layer.cornerRadius = 8
         button.frame = frame
         button.backgroundColor = .green
-        button.setTitle("Create Game", for: .normal)
+        button.setTitle("New Game", for: .normal)
         button.addTarget(self, action: #selector(startGame), for: .touchUpInside)
         
         return button

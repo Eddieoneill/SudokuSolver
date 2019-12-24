@@ -10,54 +10,66 @@ import UIKit
 
 extension ViewController {
     func createBoard() {
-        if gameButton.titleLabel?.text == "Create Game" {
-            for question in questionList[0].question {
-                for number in question {
-                    numbers.append(number)
-                }
-            }
-            
-            for (index, num) in numbers.enumerated() {
-                let title = UITextView(frame: CGRect(x: 0, y: 0, width: collection[index].bounds.size.width, height: collection[index].bounds.size.height))
-                numbersToolbar.barStyle = .default
-                numbersToolbar.items = [
-                    UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil),
-                    UIBarButtonItem(title: "Done", style: .plain, target: self, action: #selector(doneWithNumberPad))]
-                numbersToolbar.sizeToFit()
-                title.inputAccessoryView = numbersToolbar
-                title.text = "\(num)"
-                title.textAlignment = .center
-                title.font = UIFont(name: title.font?.fontName ?? "", size: 20)
-                title.keyboardType = .numberPad
-                title.backgroundColor = .white
-                title.textColor = .black
-                title.tag = index
-                
-                if num != 0 {
-                    title.isEditable = false
-                } else {
-                    self.emptySpots += 1
-                    title.text = ""
-                }
-                self.titles.append(title)
-                collection[index].contentView.addSubview(title)
-            }
+        randomQuestion.append(questionList.randomElement()!)
+        if gameButton.titleLabel?.text == "New Game" {
+            setBoard()
+            randomQuestion = []
+            numbers = []
             gameButton.setTitle("Reset Game", for: .normal)
         } else if gameButton.titleLabel?.text == "Reset Game" {
             for title in titles {
                 title.text = ""
+                title.isEditable = true
+                title.backgroundColor = .white
+                title.textColor = .black
             }
+            setUpChecker()
             gameButton.setTitle("New Game", for: .normal)
-        } else {
-            for (index, num) in numbers.enumerated() {
-                if num != 0 {
-                    titles[index].text = "\(num)"
-                    titles[index].isEditable = false
-                } else {
-                    titles[index].text = " "
+        }
+    }
+    
+    func setBoard() {
+        var count = 1
+        for question in randomQuestion[0].question {
+            for number in question {
+                numbers.append(number)
+                if number != 0 {
+                    currentRowLocation[count] = number
                 }
+                count += 1
             }
-            gameButton.setTitle("Reset Game", for: .normal)
+        }
+        print("-----------------")
+        print(currentRowLocation.sorted(by: { $0.key > $1.key }))
+        print("-----------------")
+        
+        for (index, num) in numbers.enumerated() {
+            let title = UITextView(frame: CGRect(x: 0, y: 0, width: collection[index].bounds.size.width, height: collection[index].bounds.size.height))
+            numbersToolbar.barStyle = .default
+            numbersToolbar.items = [
+                UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil),
+                UIBarButtonItem(title: "Done", style: .plain, target: self, action: #selector(doneWithNumberPad))]
+            numbersToolbar.sizeToFit()
+            title.inputAccessoryView = numbersToolbar
+            title.text = "\(num)"
+            title.textAlignment = .center
+            title.font = UIFont(name: title.font?.fontName ?? "", size: 20)
+            title.keyboardType = .numberPad
+            title.backgroundColor = .white
+            title.textColor = .black
+            title.tag = index
+            
+            if num != 0 {
+                title.isEditable = false
+                //title.font = .boldSystemFont(ofSize: 24)
+                title.backgroundColor = .gray
+                title.textColor = .white
+            } else {
+                self.emptySpots += 1
+                title.text = ""
+            }
+            self.titles.append(title)
+            collection[index].contentView.addSubview(title)
         }
     }
     
@@ -76,6 +88,15 @@ extension ViewController {
         return result
     }
     
+    func setupBox(count: Int, number: Int, num: Int) {
+        if num <= 2 {
+            box[count] = 1 + number
+        } else if num <= 5 {
+            box[count] = 2 + number
+        } else {
+            box[count] = 3 + number
+        }
+    }
     func setupBoxLocation() {
         var count = 0
         
@@ -92,29 +113,11 @@ extension ViewController {
                 count += 1
                 row[count] = num1 + 1
                 if num1 <= 2 {
-                    if num2 <= 2 {
-                        box[count] = 1
-                    } else if num2 <= 5 {
-                        box[count] = 2
-                    } else {
-                        box[count] = 3
-                    }
+                    setupBox(count: count, number: 0, num: num2)
                 } else if num1 <= 5 {
-                    if num2 <= 2 {
-                        box[count] = 4
-                    } else if num2 <= 5 {
-                        box[count] = 5
-                    } else {
-                        box[count] = 6
-                    }
+                    setupBox(count: count, number: 3, num: num2)
                 } else {
-                    if num2 <= 2 {
-                        box[count] = 7
-                    } else if num2 <= 5 {
-                        box[count] = 8
-                    } else {
-                        box[count] = 9
-                    }
+                    setupBox(count: count, number: 6, num: num2)
                 }
             }
         }
@@ -149,7 +152,30 @@ extension ViewController {
             }
         }
     }
-    func solveProblem() -> Bool {
+    
+    func removeNumbers(removedNumber: Int, rowLocation: Int, columnLocation: Int, boxLocation: Int) {
+        var rowCollection: Set<Int> = []
+        var columnCollection: Set<Int> = []
+        
+        for number in rowPossibility[rowLocation]! where boxPossibility[boxLocation]!.contains(number) {
+            rowCollection.insert(number)
+        }
+        for number in columnPossibility[rowLocation]! where boxPossibility[boxLocation]!.contains(number) {
+            columnCollection.insert(number)
+        }
+        
+        if rowCollection.contains(removedNumber) {
+            rowPossibility[rowLocation]?.remove(removedNumber)
+        }
+        if columnCollection.contains(removedNumber) {
+            columnPossibility[columnLocation]?.remove(removedNumber)
+        }
+        if boxPossibility[boxLocation]!.contains(removedNumber) {
+            boxPossibility[boxLocation]?.remove(removedNumber)
+        }
+    }
+    
+    func solveProblem() {
         var loopCount = 0
         let numberList: Set<String> = ["1","2","3","4","5","6","7","8","9"]
         
@@ -168,12 +194,14 @@ extension ViewController {
                 if possibleNumber.count == 1 {
                     let removedNumber = possibleNumber.removeFirst()
                     number.text = "\(removedNumber)"
+                    number.isEditable = false
                     loopCount = 0
                     emptySpots -= 1
                     print(emptySpots)
-                    boxPossibility[boxLocation]?.remove(removedNumber)
+                    //removeNumbers(removedNumber: removedNumber, rowLocation: rowLocation, columnLocation: columnLocation, boxLocation: boxLocation)
                     rowPossibility[rowLocation]?.remove(removedNumber)
                     columnPossibility[columnLocation]?.remove(removedNumber)
+                    boxPossibility[boxLocation]?.remove(removedNumber)
                     break
                 } else {
                     loopCount += 1
@@ -181,11 +209,11 @@ extension ViewController {
             }
             if loopCount > 81 {
                 print("couldn't complete it")
-                return false
+                return
             }
         }
         print("completed it")
-        return true
+        return
     }
 }
 
