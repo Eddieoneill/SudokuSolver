@@ -14,6 +14,8 @@ extension ViewController {
             randomQuestion.append(questionList.randomElement()!)
             setBoard()
             gameButton.setTitle("Reset Game", for: .normal)
+            solveButton.isEnabled = true
+            gameButton.isEnabled = false
         } else if gameButton.titleLabel?.text == "Reset Game" {
             for title in titles {
                 title.text = ""
@@ -26,6 +28,7 @@ extension ViewController {
             randomQuestion.removeAll()
             setUpChecker()
             setupBoxLocation()
+            solveButton.isEnabled = false
             gameButton.setTitle("New Game", for: .normal)
         }
     }
@@ -154,48 +157,46 @@ extension ViewController {
             }
         }
     }
-        
+    
     func solveProblem() {
-        var loopCount = 0
         let numberList: Set<String> = ["1","2","3","4","5","6","7","8","9"]
         
-        removeSeenNumber()
         
-        while emptySpots > 0 {
-            for (index, number) in titles.enumerated() where !numberList.contains(number.text) {
-                let current = index + 1
-                guard let boxLocation = checkPossibility(location: box, current: current) else { break }
-                guard let rowLocation = checkPossibility(location: row, current: current) else { break }
-                guard let columnLocation = checkPossibility(location: column, current: current) else { break }
-                var possibleNumber = options(row: rowPossibility[rowLocation]!, column: columnPossibility[columnLocation]!, box: boxPossibility[boxLocation]!)
-//                print("==============")
-//                print(current)
-//                print(possibleNumber.sorted(by: { $0 > $1 }))
-                
-                if possibleNumber.count == 1 {
-                    let removedNumber = possibleNumber.removeFirst()
-                    number.text = "\(removedNumber)"
-                    number.textColor = .black
-                    number.isEditable = false
-                    loopCount = 0
-                    emptySpots -= 1
-                    print(emptySpots)
-                    rowPossibility[rowLocation]?.remove(removedNumber)
-                    columnPossibility[columnLocation]?.remove(removedNumber)
-                    boxPossibility[boxLocation]?.remove(removedNumber)
-                    print("\(titles.count)")
-                    break
-                } else {
-                    loopCount += 1
-                }
-            }
-            if loopCount > 81 {
-                print("couldn't complete it")
-                return
+        
+        for (index, number) in titles.enumerated() where !numberList.contains(number.text) {
+            let current = index + 1
+            guard let boxLocation = checkPossibility(location: box, current: current) else { break }
+            guard let rowLocation = checkPossibility(location: row, current: current) else { break }
+            guard let columnLocation = checkPossibility(location: column, current: current) else { break }
+            var possibleNumber = options(row: rowPossibility[rowLocation]!, column: columnPossibility[columnLocation]!, box: boxPossibility[boxLocation]!)
+            
+            if possibleNumber.count == 1 {
+                let removedNumber = possibleNumber.removeFirst()
+                number.text = "\(removedNumber)"
+                number.textColor = .black
+                number.isEditable = false
+                loopCount = 0
+                emptySpots -= 1
+                print(emptySpots)
+                rowPossibility[rowLocation]?.remove(removedNumber)
+                columnPossibility[columnLocation]?.remove(removedNumber)
+                boxPossibility[boxLocation]?.remove(removedNumber)
+                print("\(titles.count)")
+                break
+            } else {
+                loopCount += 1
             }
         }
-        print("completed it")
-        return
+        if loopCount > 81 {
+            print("couldn't complete it")
+            gameButton.isEnabled = true
+            gameTimer?.invalidate()
+        }
+        if emptySpots <= 0 {
+            print("completed it")
+            gameButton.isEnabled = true
+            gameTimer?.invalidate()
+        }
     }
 }
 

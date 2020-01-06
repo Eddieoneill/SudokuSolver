@@ -25,6 +25,8 @@ class ViewController: UIViewController, UITextFieldDelegate {
     var boxPossibility: [Int: Set<Int>] = [1: [], 2: [], 3: [], 4: [], 5: [], 6: [], 7: [], 8: [], 9: []]
     var numbers = [Int]()
     let numbersToolbar = UIToolbar(frame:CGRect(x: 0, y: 0, width: UIScreen.main.bounds.width, height: 50))
+    var gameTimer: Timer?
+    var loopCount = 0
     
     fileprivate let collectionView: UICollectionView = {
         let layout = UICollectionViewFlowLayout()
@@ -79,6 +81,7 @@ class ViewController: UIViewController, UITextFieldDelegate {
         loadQuestion()
         setUpChecker()
         setupBoxLocation()
+        solveButton.isEnabled = false
     }
     
     func setUpChecker() {
@@ -109,7 +112,13 @@ class ViewController: UIViewController, UITextFieldDelegate {
     }
     
     @objc func solveGame(sender : UIButton) {
-        solveProblem()
+        loopCount = 0
+        removeSeenNumber()
+        gameTimer = Timer.scheduledTimer(timeInterval: 0.05, target: self, selector: #selector(solve), userInfo: nil, repeats: true)
+    }
+    
+    @objc func solve() {
+       solveProblem()
     }
 }
 
