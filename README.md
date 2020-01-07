@@ -5,7 +5,7 @@
 - This app is a app that allows the user to play Sudoku and provides the answer if they request. The main focus of this project was the question solving algorithem.
 - This app will load the question from the API and solve it with the logic I wrote
 
-![Dec-24-2019 13-26-48](https://user-images.githubusercontent.com/42211866/71422566-17b27800-2651-11ea-9e6f-5689f9abad0d.gif)
+![SutokeSolverGIF](https://user-images.githubusercontent.com/42211866/71908641-66c1d800-313c-11ea-9635-6ed47a8a263a.gif)
 
 ## Challenges
 
