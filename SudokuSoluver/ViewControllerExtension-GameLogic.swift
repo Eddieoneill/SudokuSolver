@@ -161,8 +161,6 @@ extension ViewController {
     func solveProblem() {
         let numberList: Set<String> = ["1","2","3","4","5","6","7","8","9"]
         
-        
-        
         for (index, number) in titles.enumerated() where !numberList.contains(number.text) {
             let current = index + 1
             guard let boxLocation = checkPossibility(location: box, current: current) else { break }
@@ -173,7 +171,7 @@ extension ViewController {
             if possibleNumber.count == 1 {
                 let removedNumber = possibleNumber.removeFirst()
                 number.text = "\(removedNumber)"
-                number.textColor = .black
+                number.textColor = .green
                 number.isEditable = false
                 loopCount = 0
                 emptySpots -= 1
