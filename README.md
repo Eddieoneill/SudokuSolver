@@ -1,7 +1,9 @@
 # SudokuSolver
 
 ## Description
-
+A sudoku game that generates puzzles, including a self-solving algorithm feature that completes unsolved problems for users.
+- Deployed using Swift in order to create a problem-solving algorithm that will complete the sudoku puzzle on command.
+- Created a custom API to store the sudoku questions.
 - This app is a app that allows the user to play Sudoku and provides the answer if they request. The main focus of this project was the question solving algorithem.
 - This app will load the question from the API and solve it with the logic I wrote
 
